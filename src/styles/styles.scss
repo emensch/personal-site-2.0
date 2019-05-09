@@ -10,3 +10,8 @@ body {
   background-color: $bg-color;
   color: $primary-font;
 }
+
+#starfield {
+  position: absolute;
+  z-index: -10;
+}
