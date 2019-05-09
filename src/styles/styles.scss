@@ -110,6 +110,10 @@ body {
     @include button-coloring($github);
   }
 
+  &.facebook {
+    @include button-coloring($facebook);
+  }
+
   &.email {
     @include button-coloring($email);
   }
