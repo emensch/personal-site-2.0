@@ -1,5 +1,5 @@
 import Star, { IStarOptions } from "./Star";
-import { Size } from "./types";
+import { Size, XYCoord } from "./types";
 
 export interface IStarFieldOptions {
   initialStarColor: string;
@@ -12,10 +12,13 @@ export interface IStarGeneratorOptions extends IStarOptions {
 }
 
 class Starfield {
+  private RESIZE_FACTOR = 1.25;
+
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private fieldSize: Size;
   private starColor: string;
+  private starOptions: IStarGeneratorOptions[] = [];
   private stars: Star[] = [];
 
   constructor(canvas: HTMLCanvasElement, options: IStarFieldOptions) {
@@ -24,39 +27,50 @@ class Starfield {
 
     const { initialStarColor, starOptions, initialSize } = options;
     this.starColor = initialStarColor;
+    this.starOptions = starOptions;
 
     const { width, height } = initialSize;
-    this.fieldSize = initialSize;
+    const fieldWidth = width * this.RESIZE_FACTOR;
+    const fieldHeight = height * this.RESIZE_FACTOR;
+    this.fieldSize = { width: fieldWidth, height: fieldHeight };
 
     this.canvas.width = width;
     this.canvas.height = height;
-    
-    // Generate stars
-    for (let starGeneratorOption of starOptions) {
-      const { frequency, ...starOptions } = starGeneratorOption;
 
-      const numStars = width * height * frequency;
-
-      // Add stars to array
-      for (let idx = 0; idx < numStars; idx++) {
-        const star = new Star(starOptions, this.getRandomCoord())
-        this.stars.push(star);
-      }
-    }
-
+    this.createStarsInArea({ x: 0, y: 0 }, { x: fieldWidth, y: fieldHeight });
+  
     this.animate();
   }
 
-  private getRandomCoord = () => {
-    const { height, width } = this.fieldSize;
-    const x = Math.floor(Math.random() * width);
-    const y = Math.floor(Math.random() * height);
+  private createStarsInArea = (start: XYCoord, end: XYCoord) => {
+    const width = end.x - start.x;
+    const height = end.y - start.y;
+
+    for (let starGeneratorOption of this.starOptions) {
+      const { frequency, ...starOptions } = starGeneratorOption;
+
+      const numStars = Math.floor(width * height * frequency);
+
+      for (let idx = 0; idx < numStars; idx++) {
+        const star = new Star(starOptions, this.getRandomCoord(start, end))
+        this.stars.push(star);
+      }
+    }
+  }
+
+  private getRandomCoord = (start: XYCoord, end: XYCoord) => {
+    const width = end.x - start.x;
+    const height = end.y - start.y;
+
+    const x = Math.floor(Math.random() * width) + start.x;
+    const y = Math.floor(Math.random() * height) + start.y;
 
     return { x, y };
   }
 
   private draw = () => {
     const { height, width } = this.canvas;
+    const { height: fieldHeight } = this.fieldSize;
     this.ctx.clearRect(0, 0, width, height);
 
     this.ctx.fillStyle = this.starColor;
@@ -67,13 +81,42 @@ class Starfield {
       this.ctx.globalAlpha = brightness;
       this.ctx.fillRect(x, y, size, size);
 
-      star.advance(2);
+      if (y > fieldHeight) {
+        const newX = Math.floor(Math.random() * width);
+        star.setPos({ x: newX, y: 0 - size })
+      }
+
+      star.advance();
     }
   }
 
   public resize = (width: number, height: number) => {
     this.canvas.width = width;
     this.canvas.height = height;
+
+    const { width: fieldWidth, height: fieldHeight } = this.fieldSize;
+
+    const widthResizeNeeded = width > fieldWidth;
+    const heightResizeNeeded = height > fieldHeight;
+
+    if (widthResizeNeeded || heightResizeNeeded) {
+      const newWidth = Math.max(fieldWidth * this.RESIZE_FACTOR, width * this.RESIZE_FACTOR);
+      const newHeight = Math.max(fieldHeight * this.RESIZE_FACTOR, width * this.RESIZE_FACTOR);
+  
+      if (widthResizeNeeded) {
+        this.fieldSize.width = newWidth;
+        this.createStarsInArea({ x: fieldWidth, y: 0 }, { x: newWidth, y: fieldHeight });
+      }
+  
+      if (heightResizeNeeded) {
+        this.fieldSize.height = newHeight;
+        this.createStarsInArea({ x: 0, y: fieldHeight }, { x: fieldWidth, y: newHeight });
+      }
+  
+      if (heightResizeNeeded && widthResizeNeeded) {
+        this.createStarsInArea({ x: fieldWidth, y: fieldHeight }, { x: newWidth, y: newHeight });
+      }
+    }
   }
 
   public animate = () => {
