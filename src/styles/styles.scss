@@ -1,17 +1,118 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:300');
+
 @import "./variables.scss";
 
 body {
   padding: 0;
   margin: 0;
-
-  width: 100vw;
-  height: 100vh;
   
   background-color: $bg-color;
   color: $primary-font;
+
+  width: 100vw;
+  height: 100vh;
+
+  overflow: hidden;
+
+  font-family: 'Montserrat', sans-serif;
 }
 
 #starfield {
   position: absolute;
   z-index: -10;
+}
+
+#main-content {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-content-container {
+  animation: 1s ease 0s 1 normal enter;
+}
+
+@keyframes enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.name-header {
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 3.5rem;
+  font-weight: 300;
+  letter-spacing: 0.5rem;
+
+  margin: 0 0 1rem 0;
+}
+
+.links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  text-align: center;
+
+  li {
+    display: inline-block;
+    margin: 0 0.15rem;
+  }
+}
+
+@mixin button-coloring($color) {
+  &:hover {
+    background: $color;
+  }
+
+  &:active {
+    background: darken($color, $darkening-factor);
+    transform: scale(1.1);
+  }
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: $primary-font;
+  color: $bg-color;
+
+  width: 2.5rem;
+  height: 2.5rem;
+
+  border-radius: 50%;
+
+  text-decoration: none;
+  font-size: 1.5rem;
+
+  &:hover {
+    color: white;
+    transform: scale(1.2);
+  }
+
+  &.linkedin {
+    @include button-coloring($linkedin);
+  }
+    
+  &.github {
+    @include button-coloring($github);
+  }
+
+  &.email {
+    @include button-coloring($email);
+  }
+
+  transition: all 0.2s ease;
 }
