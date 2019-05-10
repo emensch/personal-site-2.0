@@ -1,6 +1,7 @@
 export interface IAnimationStep<T> {
   target: T,
-  duration: number
+  duration: number,
+  easingFn?: (t: number) => number
 }
 
 export type LerpFn<T> = (start: T, end: T, percentDone: number) => T;
@@ -36,7 +37,7 @@ class AnimatableProperty<T> {
     return timeStamp;
   }
 
-  private ease = (t: number) => t < .5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1;
+  private defaultEase = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
   public update = () => {
     if (this.done) {
@@ -50,7 +51,7 @@ class AnimatableProperty<T> {
       this.startTime = currentTime;
     }
 
-    const { target, duration } = this.currentAnimationStep;
+    const { target, duration, easingFn } = this.currentAnimationStep;
 
     const timeDiff = currentTime - this.startTime;
 
@@ -73,7 +74,9 @@ class AnimatableProperty<T> {
 
     const percentDone = timeDiff / duration;
 
-    this.currentValue = this.lerpFn(this.start, target, this.ease(percentDone))
+    const selectedEasingFn = easingFn || this.defaultEase;
+
+    this.currentValue = this.lerpFn(this.start, target, selectedEasingFn(percentDone))
     return this.currentValue;
   }
 
