@@ -1,9 +1,9 @@
 import Star, { IStarOptions } from "./Star";
-import { Size, XYCoord } from "./types";
+import { Size, XYCoord, Color } from "./types";
 import AnimatableProperty, { IAnimationStep } from "./AnimatableProperty";
 
 export interface IStarFieldOptions {
-  initialStarColor: string;
+  initialStarColor: Color;
   initialSize: Size;
   starOptions: IStarGeneratorOptions[];
 }
@@ -18,12 +18,14 @@ class Starfield {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private fieldSize: Size;
-  private starColor: string;
+  private starColor: Color;
   private starOptions: IStarGeneratorOptions[] = [];
   private stars: Star[] = [];
 
   private currentSpeedMultiplier = 1;
-  private speedAnimator: AnimatableProperty | null = null;
+
+  private speedAnimator: AnimatableProperty<number> | null = null;
+  private colorAnimator: AnimatableProperty<Color> | null = null;
 
   constructor(canvas: HTMLCanvasElement, options: IStarFieldOptions) {
     this.canvas = canvas;
@@ -44,6 +46,89 @@ class Starfield {
     this.createStarsInArea({ x: 0, y: 0 }, { x: fieldWidth, y: fieldHeight });
   
     this.animate();
+  }
+
+  public resize = (width: number, height: number) => {
+    this.canvas.width = width;
+    this.canvas.height = height;
+
+    const { width: fieldWidth, height: fieldHeight } = this.fieldSize;
+
+    const widthResizeNeeded = width > fieldWidth;
+    const heightResizeNeeded = height > fieldHeight;
+
+    if (widthResizeNeeded || heightResizeNeeded) {
+      const newWidth = Math.max(fieldWidth * this.RESIZE_FACTOR, width * this.RESIZE_FACTOR);
+      const newHeight = Math.max(fieldHeight * this.RESIZE_FACTOR, width * this.RESIZE_FACTOR);
+  
+      if (widthResizeNeeded) {
+        this.fieldSize.width = newWidth;
+        this.createStarsInArea({ x: fieldWidth, y: 0 }, { x: newWidth, y: fieldHeight });
+      }
+  
+      if (heightResizeNeeded) {
+        this.fieldSize.height = newHeight;
+        this.createStarsInArea({ x: 0, y: fieldHeight }, { x: fieldWidth, y: newHeight });
+      }
+  
+      if (heightResizeNeeded && widthResizeNeeded) {
+        this.createStarsInArea({ x: fieldWidth, y: fieldHeight }, { x: newWidth, y: newHeight });
+      }
+    }
+  }
+
+  public animateSpeed = (animationSteps: IAnimationStep<number> | IAnimationStep<number>[]) => {
+    const steps = Array.isArray(animationSteps) ? animationSteps : [animationSteps];
+    this.speedAnimator = new AnimatableProperty(
+      this.currentSpeedMultiplier, 
+      steps, 
+      (start, end, percentDone) => start + (end - start) * percentDone
+    );
+  }
+
+  public animateColor = (animationSteps: IAnimationStep<Color> | IAnimationStep<Color>[]) => {
+    const steps = Array.isArray(animationSteps) ? animationSteps : [animationSteps];
+    this.colorAnimator = new AnimatableProperty(
+      this.starColor,
+      steps,
+      (start, end, percentDone) => {
+        return {
+          r: start.r + (end.r - start.r) * percentDone,
+          g: start.g + (end.g - start.g) * percentDone,
+          b: start.b + (end.b - start.b) * percentDone,
+          a: start.a + (end.a - start.a) * percentDone
+        }
+      }
+    )
+  }
+
+  public animate = () => {
+    requestAnimationFrame(() => {
+      this.draw();
+      this.handleSpeedAnimator();
+      this.handleColorAnimator();
+      requestAnimationFrame(this.animate);
+    })
+  }
+
+  private handleSpeedAnimator = () => {
+    if (this.speedAnimator) {
+      this.currentSpeedMultiplier = this.speedAnimator.update();
+
+      if (this.speedAnimator.isDone()) {
+        this.speedAnimator = null;
+      }
+    }
+  }
+
+  private handleColorAnimator = () => {
+    if (this.colorAnimator) {
+      this.starColor = this.colorAnimator.update();
+
+      if (this.colorAnimator.isDone()) {
+        this.colorAnimator = null;
+      }
+    }
   }
 
   private createStarsInArea = (start: XYCoord, end: XYCoord) => {
@@ -77,7 +162,7 @@ class Starfield {
     const { height: fieldHeight } = this.fieldSize;
     this.ctx.clearRect(0, 0, width, height);
 
-    this.ctx.fillStyle = this.starColor;
+    this.ctx.fillStyle = this.getColorString(this.starColor);
 
     for (let star of this.stars) {
       const { coords: { x, y }, options: { brightness, size }} = star;
@@ -98,60 +183,9 @@ class Starfield {
     }
   }
 
-  private handleSpeedAnimator = () => {
-    if (this.speedAnimator) {
-      this.currentSpeedMultiplier = this.speedAnimator.update();
-
-      if (this.speedAnimator.isDone()) {
-        this.speedAnimator = null;
-      }
-    }
-  }
-
-  public resize = (width: number, height: number) => {
-    this.canvas.width = width;
-    this.canvas.height = height;
-
-    const { width: fieldWidth, height: fieldHeight } = this.fieldSize;
-
-    const widthResizeNeeded = width > fieldWidth;
-    const heightResizeNeeded = height > fieldHeight;
-
-    if (widthResizeNeeded || heightResizeNeeded) {
-      const newWidth = Math.max(fieldWidth * this.RESIZE_FACTOR, width * this.RESIZE_FACTOR);
-      const newHeight = Math.max(fieldHeight * this.RESIZE_FACTOR, width * this.RESIZE_FACTOR);
-  
-      if (widthResizeNeeded) {
-        this.fieldSize.width = newWidth;
-        this.createStarsInArea({ x: fieldWidth, y: 0 }, { x: newWidth, y: fieldHeight });
-      }
-  
-      if (heightResizeNeeded) {
-        this.fieldSize.height = newHeight;
-        this.createStarsInArea({ x: 0, y: fieldHeight }, { x: fieldWidth, y: newHeight });
-      }
-  
-      if (heightResizeNeeded && widthResizeNeeded) {
-        this.createStarsInArea({ x: fieldWidth, y: fieldHeight }, { x: newWidth, y: newHeight });
-      }
-    }
-  }
-
-  public setStarColor = (color: string) => {
-    this.starColor = color;
-  }
-
-  public animateSpeed = (animationSteps: IAnimationStep | IAnimationStep[]) => {
-    const steps = Array.isArray(animationSteps) ? animationSteps : [animationSteps];
-    this.speedAnimator = new AnimatableProperty(this.currentSpeedMultiplier, steps);
-  }
-
-  public animate = () => {
-    requestAnimationFrame(() => {
-      this.draw();
-      this.handleSpeedAnimator();
-      requestAnimationFrame(this.animate);
-    })
+  private getColorString = (color: Color) => {
+    const { r, g, b, a } = color;
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
   }
 } 
 

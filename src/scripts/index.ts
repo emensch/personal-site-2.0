@@ -2,7 +2,7 @@ import Starfield, { IStarFieldOptions } from "./starfield/Starfield";
 
 // Attach starfield 
 const starfieldConfig: IStarFieldOptions = {
-  initialStarColor: "#FFFFFF",
+  initialStarColor: { r: 255, g: 255, b: 255, a: 0 },
   initialSize: {
     width: window.innerWidth,
     height: window.innerHeight
@@ -28,12 +28,11 @@ const starfieldConfig: IStarFieldOptions = {
 const canvas = document.getElementById("starfield") as HTMLCanvasElement;
 const starfield = new Starfield(canvas, starfieldConfig);
 
+starfield.animateColor({ target: { r: 255, g: 255, b: 255, a: 1 }, duration: 2000 })
 
 // Resize canvas 
 const resizeStarfield = () => {
   starfield.resize(window.innerWidth, window.innerHeight);
 }
-
-setTimeout(() => starfield.animateSpeed([{ target: 100, duration: 1000 }, { target: 1, duration: 1000 }]), 1000);
 
 window.addEventListener("resize", resizeStarfield);

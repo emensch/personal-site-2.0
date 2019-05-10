@@ -1,20 +1,26 @@
-export interface IAnimationStep {
-  target: number,
+export interface IAnimationStep<T> {
+  target: T,
   duration: number
 }
 
-class AnimatableProperty {
-  private start: number;
-  private currentValue: number;
-  private animationSteps: IAnimationStep[] = [];
-  private currentAnimationStep: IAnimationStep;
+export type LerpFn<T> = (start: T, end: T, percentDone: number) => T;
+
+class AnimatableProperty<T> {
+  private start: T;
+  private currentValue: T;
+  private animationSteps: IAnimationStep<T>[] = [];
+  private currentAnimationStep: IAnimationStep<T>;
+  private lerpFn: LerpFn<T>; 
+
   private done: boolean = false;
 
   private startTime: DOMHighResTimeStamp | null = null;
 
-  constructor (start: number, animationSteps: IAnimationStep[]) {
+  constructor (start: T, animationSteps: IAnimationStep<T>[], lerpFn: LerpFn<T>) {
     this.start = start;
     this.animationSteps = [...animationSteps];
+
+    this.lerpFn = lerpFn;
 
     this.currentValue = start;
 
@@ -22,7 +28,7 @@ class AnimatableProperty {
       throw new Error("No animation steps provided!");
     }
 
-    this.currentAnimationStep = this.animationSteps.shift() as IAnimationStep;
+    this.currentAnimationStep = this.animationSteps.shift() as IAnimationStep<T>;
   }
 
   private getCurrentTimeStamp = () => {
@@ -67,7 +73,7 @@ class AnimatableProperty {
 
     const percentDone = timeDiff / duration;
 
-    this.currentValue = this.start + (target - this.start) * this.ease(percentDone);
+    this.currentValue = this.lerpFn(this.start, target, this.ease(percentDone))
     return this.currentValue;
   }
 
