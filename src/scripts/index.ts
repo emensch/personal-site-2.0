@@ -7,6 +7,7 @@ const starfieldConfig: IStarFieldOptions = {
     width: window.innerWidth,
     height: window.innerHeight
   },
+  initialSpeedMuliplier: 100,
   starOptions: [{
     frequency: 0.00006,
     size: 3,
@@ -28,6 +29,7 @@ const starfieldConfig: IStarFieldOptions = {
 const canvas = document.getElementById("starfield") as HTMLCanvasElement;
 const starfield = new Starfield(canvas, starfieldConfig);
 
+starfield.animateSpeed({ target: 1, duration: 2000 });
 starfield.animateColor({ target: { r: 255, g: 255, b: 255, a: 1 }, duration: 2000 })
 
 // Resize canvas 

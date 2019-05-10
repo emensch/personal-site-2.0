@@ -5,6 +5,7 @@ import AnimatableProperty, { IAnimationStep } from "./AnimatableProperty";
 export interface IStarFieldOptions {
   initialStarColor: Color;
   initialSize: Size;
+  initialSpeedMuliplier?: number;
   starOptions: IStarGeneratorOptions[];
 }
 
@@ -22,7 +23,7 @@ class Starfield {
   private starOptions: IStarGeneratorOptions[] = [];
   private stars: Star[] = [];
 
-  private currentSpeedMultiplier = 1;
+  private currentSpeedMultiplier: number;
 
   private speedAnimator: AnimatableProperty<number> | null = null;
   private colorAnimator: AnimatableProperty<Color> | null = null;
@@ -31,8 +32,10 @@ class Starfield {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-    const { initialStarColor, starOptions, initialSize } = options;
+    const { initialStarColor, starOptions, initialSize, initialSpeedMuliplier } = options;
     this.starColor = initialStarColor;
+    this.currentSpeedMultiplier = initialSpeedMuliplier || 1;
+
     this.starOptions = starOptions;
 
     const { width, height } = initialSize;
