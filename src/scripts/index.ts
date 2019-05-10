@@ -1,4 +1,4 @@
-import Starfield, { IStarFieldOptions } from "./Starfield";
+import Starfield, { IStarFieldOptions } from "./starfield/Starfield";
 
 // Attach starfield 
 const starfieldConfig: IStarFieldOptions = {
@@ -33,5 +33,7 @@ const starfield = new Starfield(canvas, starfieldConfig);
 const resizeStarfield = () => {
   starfield.resize(window.innerWidth, window.innerHeight);
 }
+
+setTimeout(() => starfield.animateSpeed([{ target: 100, duration: 2000 }, { target: 1, duration: 2000 }]), 1000);
 
 window.addEventListener("resize", resizeStarfield);

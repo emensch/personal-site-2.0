@@ -1,5 +1,6 @@
 import Star, { IStarOptions } from "./Star";
 import { Size, XYCoord } from "./types";
+import AnimatableProperty, { IAnimationStep } from "./AnimatableProperty";
 
 export interface IStarFieldOptions {
   initialStarColor: string;
@@ -20,6 +21,9 @@ class Starfield {
   private starColor: string;
   private starOptions: IStarGeneratorOptions[] = [];
   private stars: Star[] = [];
+
+  private currentSpeedMultiplier = 1;
+  private speedAnimator: AnimatableProperty | null = null;
 
   constructor(canvas: HTMLCanvasElement, options: IStarFieldOptions) {
     this.canvas = canvas;
@@ -86,7 +90,17 @@ class Starfield {
         star.setPos({ x: newX, y: 0 - size })
       }
 
-      star.advance();
+      star.advance(this.currentSpeedMultiplier);
+    }
+  }
+
+  private handleSpeedAnimator = () => {
+    if (this.speedAnimator) {
+      this.currentSpeedMultiplier = this.speedAnimator.update();
+
+      if (this.speedAnimator.isDone()) {
+        this.speedAnimator = null;
+      }
     }
   }
 
@@ -119,9 +133,19 @@ class Starfield {
     }
   }
 
+  public setStarColor = (color: string) => {
+    this.starColor = color;
+  }
+
+  public animateSpeed = (animationSteps: IAnimationStep | IAnimationStep[]) => {
+    const steps = Array.isArray(animationSteps) ? animationSteps : [animationSteps];
+    this.speedAnimator = new AnimatableProperty(this.currentSpeedMultiplier, steps);
+  }
+
   public animate = () => {
     requestAnimationFrame(() => {
       this.draw();
+      this.handleSpeedAnimator();
       requestAnimationFrame(this.animate);
     })
   }
