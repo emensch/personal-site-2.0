@@ -80,7 +80,9 @@ class Starfield {
     }
   }
 
-  public animateSpeed = (animationSteps: IAnimationStep<number> | IAnimationStep<number>[]) => {
+  public setSpeedMultiplier = (speedMultiplier: number) => this.currentSpeedMultiplier = speedMultiplier;
+
+  public animateSpeedMultiplier = (animationSteps: IAnimationStep<number> | IAnimationStep<number>[]) => {
     const steps = Array.isArray(animationSteps) ? animationSteps : [animationSteps];
     this.speedAnimator = new AnimatableProperty(
       this.currentSpeedMultiplier, 
@@ -88,6 +90,8 @@ class Starfield {
       (start, end, percentDone) => start + (end - start) * percentDone
     );
   }
+
+  private setColor = (color: Color) => this.starColor = color;
 
   public animateColor = (animationSteps: IAnimationStep<Color> | IAnimationStep<Color>[]) => {
     const steps = Array.isArray(animationSteps) ? animationSteps : [animationSteps];
