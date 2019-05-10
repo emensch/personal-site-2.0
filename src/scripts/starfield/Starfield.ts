@@ -82,8 +82,12 @@ class Starfield {
     for (let star of this.stars) {
       const { coords: { x, y }, options: { brightness, size }} = star;
 
+      const stretchDir = Math.sign(this.currentSpeedMultiplier);
+      const absMultiplier = Math.abs(this.currentSpeedMultiplier);
+      const stretch = Math.floor(Math.sqrt(size * absMultiplier));
+
       this.ctx.globalAlpha = brightness;
-      this.ctx.fillRect(x, y, size, size);
+      this.ctx.fillRect(x, y - (stretch / 2) * stretchDir, size, size + stretch);
 
       if (y > fieldHeight) {
         const newX = Math.floor(Math.random() * width);
