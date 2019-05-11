@@ -1,0 +1,30 @@
+@font-face {
+  font-family: "iconfont";
+  src:url("../assets/fonts/iconfont.eot");
+  src:url("../assets/fonts/iconfont.woff") format("woff"),
+    url("../assets/fonts/iconfont.ttf") format("truetype"),
+    url("../assets/fonts/iconfont.svg") format("svg");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.icon {
+  font-family: "iconfont";
+  font-style: normal;
+}
+
+.icon-facebook:before {
+  content: "\61";
+}
+.icon-linkedin:before {
+  content: "\62";
+}
+.icon-github:before {
+  content: "\63";
+}
+.icon-mail:before {
+  content: "\64";
+}
+.icon-caret-down:before {
+  content: "\65";
+}
