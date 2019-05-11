@@ -1,4 +1,13 @@
 @font-face {
+  font-family: "Montserrat";
+  src:url("../assets/fonts/Montserrat-Light.eot");
+  src:url("../assets/fonts/Montserrat-Light.woff") format("woff"),
+    url("../assets/fonts/Montserrat-Light.ttf") format("truetype");
+  font-weight: light;
+  font-style: normal;
+}
+
+@font-face {
   font-family: "iconfont";
   src:url("../assets/fonts/iconfont.eot");
   src:url("../assets/fonts/iconfont.woff") format("woff"),
