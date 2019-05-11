@@ -3,7 +3,10 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
-const webpack = require('webpack');
+const webpack = require("webpack");
+
+const devMode = process.env.NODE_ENV !== "production";
+const basePath = path.resolve(__dirname, "dist");
 
 const config = {
   entry: [
@@ -15,7 +18,7 @@ const config = {
   },
   output: {
     filename: "main.[hash].js",
-    path: path.resolve(__dirname, "dist")
+    path: basePath,
   },
   plugins: [
     new MiniCssExtractPlugin({
@@ -44,6 +47,16 @@ const config = {
           { loader: "css-loader" },
           { loader: "sass-loader" },
         ]
+      },
+      {
+        test: /\.(eot|ttf|otf|woff|woff2|svg)$/,
+        use: [{
+          loader: "file-loader",
+          options: {
+            outputPath: "./fonts/",
+            name: "[name].[ext]"
+          }
+        }]
       }
     ]
   },
